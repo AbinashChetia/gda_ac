@@ -21,14 +21,17 @@ def splitTrainTest(x, y, train_ratio=0.8):
 def get_performance_measure(y, pred):
     if np.unique(y).shape[0] == 2:
         tp, tn, fp, fn = 0, 0, 0, 0
+        classes = np.unique(y)
+        p_class = classes.max()
+        n_class = classes.min()
         for i in range(len(y)):
-            if y[i] == 1 and pred[i] == 1:
+            if y[i] == p_class and pred[i] == p_class:
                 tp += 1
-            elif y[i] == 0 and pred[i] == 0:
+            elif y[i] == n_class and pred[i] == n_class:
                 tn += 1
-            elif y[i] == 0 and pred[i] == 1:
+            elif y[i] == n_class and pred[i] == p_class:
                 fp += 1
-            elif y[i] == 1 and pred[i] == 0:
+            elif y[i] == p_class and pred[i] == n_class:
                 fn += 1
         precision = tp / (tp + fp)
         recall = tp / (tp + fn)
