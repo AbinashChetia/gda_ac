@@ -12,7 +12,7 @@ class LinDiscAnalysis:
             return self.__binLDA(X, y)
         else:
             self.binary = False
-            raise ValueError('Only binary classification is supported till now.')
+            return self.__multiLDA(X, y)
         
     def __binLDA(self, X, y):
         inv_x_cov = np.linalg.inv(X.cov())
@@ -26,13 +26,25 @@ class LinDiscAnalysis:
         w = np.dot((mean_1 - mean_0), inv_x_cov)
         self.w = np.append(w_0, w)
 
+    def __multiLDA(self, X, y):
+        inv_x_cov = np.linalg.inv(X.cov())
+        p = {}
+        mean = {}
+        for i in y.unique():
+            p[i] = len(X[y == i]) / len(X)
+            mean[i] = X[y == i].mean()
+        w = {}
+        for i in y.unique():
+            w[i] = np.append(np.log(p[i]) - 0.5 * np.dot(np.dot(mean[i], inv_x_cov), mean[i]), np.dot(mean[i], inv_x_cov))
+        self.w = w
+
     def predict(self, X, prob = False):
         if self.w is None:
             raise ValueError('Model is not fitted yet.')
         if self.binary:
             return self.__pred_binLDA(X, prob)
         else:
-            raise ValueError('Only binary classification is supported till now.')
+            return self.__pred_multiLDA(X, prob)
 
     def __pred_binLDA(self, X, prob = False):
         w_0 = self.w[0]
@@ -42,6 +54,26 @@ class LinDiscAnalysis:
             return pred_prob
         else:
             pred = [1 if i > 0 else 0 for i in pred_prob]
+            return pred
+        
+    def __pred_multiLDA(self, X, prob = False):
+        pred_prob = {}
+        for i in self.w.keys():
+            w_0 = self.w[i][0]
+            w = self.w[i][1:]
+            pred_prob[i] = np.dot(X, w) + w_0
+        if prob:
+            return pred_prob
+        else:
+            pred = []
+            for i in range(len(X)):
+                max_prob = -np.inf
+                pred_class = None
+                for j in pred_prob.keys():
+                    if pred_prob[j][i] > max_prob:
+                        max_prob = pred_prob[j][i]
+                        pred_class = j
+                pred.append(pred_class)
             return pred
         
     def get_params(self):
