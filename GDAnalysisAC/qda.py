@@ -12,11 +12,15 @@ class QuadDiscAnalysis:
         self.probabilities = {}
         self.cov_mat = {}
         self.mean = {}
-        self.classes = np.unique(y)
+        self.classes = y.unique()
+        cov_det = []
         for c in self.classes:
             self.probabilities[c] = y.value_counts()[c] / len(y)
             self.cov_mat[c] = X[y == c].cov()
+            cov_det.append(np.linalg.det(X[y == c].cov()))
             self.mean[c] = X[y == c].mean()
+        if np.any(np.array(cov_det) == 0):
+            raise ValueError('Covariance matrix is singular.')
 
     def predict(self, X, prob = False):
         if self.cov_mat is None or self.mean is None or self.probabilities is None or self.classes is None:
