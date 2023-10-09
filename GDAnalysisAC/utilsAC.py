@@ -105,52 +105,57 @@ def disp_conf_mat(perf_m):
     plt.title('Confusion Matrix', fontsize=10)
     plt.show()
 
-def plot_dec_bound(X, y, w):
+def plot_dec_bound(X, y, w, gda_mode=None):
     c_map = {0: 'b', 1: 'r', 2: 'g', 3: 'm', 4: 'c', 5: 'y', 6: 'k'}
-    if X.shape[1] == 2 and np.unique(y).shape[0] == 2:
-        db = [(-w[0] - w[1] * i) / w[2] for i in X[0]]
-        plt.figure(figsize=(5, 5))
-        plt.scatter(X[y == 0][0], X[y == 0][1], c='b', marker='x', label='Negative class')
-        plt.scatter(X[y == 1][0], X[y == 1][1], c='r', marker='x', label='Positive class')
-        plt.plot(X[0], db, c='black', label='Decision boundary')
-        plt.xlabel('x1')
-        plt.ylabel('x2')
-        plt.legend()
-        plt.title('Decision Boundary')
-        plt.show()
-    # elif X.shape[1] == 3 and np.unique(y).shape[0] == 2:
-    #     db = [(-w[0] - w[1] * i - w[2] * j) / w[3] for i, j in zip(X[0], X[1])]
-    #     ax = plt.axes(projection='3d')
-    #     ax.plot_trisurf(X.iloc[:, 0], X.iloc[:, 1], db, alpha=0.7)
-    #     ax.scatter3D(X[y == 0].iloc[:, 0], X[y == 0].iloc[:, 1], X[y == 0].iloc[:, 2], c='b', marker='x', label='Negative class')
-    #     ax.scatter3D(X[y == 1].iloc[:, 0], X[y == 1].iloc[:, 1], X[y == 1].iloc[:, 2], c='r', marker='x', label='Positive class')
-    #     ax.set_xlabel('X1')
-    #     ax.set_ylabel('X2')
-    #     ax.set_zlabel('X3')
-    #     plt.title('Decision Boundary')
-    #     plt.show()
-    elif X.shape[1] == 3 and np.unique(y).shape[0] > 2:
-        plt.figure(figsize=(16, 9))
-        ax = plt.axes(projection='3d')
-        db_done = []
-        for i in np.unique(y):
-            ax.scatter3D(X[y == i][0], X[y == i][1], X[y == i].iloc[:, 2], c=y[y == i].apply(lambda x: c_map[x]), marker='x', label=f'Class {i}')
-            for j in np.unique(y):
-                if j != i and (i, j) not in db_done and (j, i) not in db_done:
-                    w_db = w[i] - w[j]
-                    db = []
-                    for m in range(X.shape[0]):
-                        db.append((-w_db[0] - w_db[1] * X.iloc[m, 0] - w_db[2] * X.iloc[m, 1]) / w_db[3])
-                    ax.plot_trisurf(X[0], X[1], db, alpha=0.5, label=f'Decision boundary between classes {i} & {j}')
-                    db_done.append((i, j))
-        ax.set_xlabel('X1')
-        ax.set_ylabel('X2')
-        ax.set_zlabel('X3')
-        plt.legend()
-        plt.title('Decision Boundaries')
-        plt.show()
-    else:
-        print('Facility to plot decision boundary for data with more than 3 features has not been added yet!')
+    if gda_mode == None:
+        raise Exception('Pass gda_mode.')
+    elif gda_mode == 'lda':
+        if X.shape[1] == 2 and np.unique(y).shape[0] == 2:
+            db = [(-w[0] - w[1] * i) / w[2] for i in X[0]]
+            plt.figure(figsize=(5, 5))
+            plt.scatter(X[y == 0][0], X[y == 0][1], c='b', marker='x', label='Negative class')
+            plt.scatter(X[y == 1][0], X[y == 1][1], c='r', marker='x', label='Positive class')
+            plt.plot(X[0], db, c='black', label='Decision boundary')
+            plt.xlabel('x1')
+            plt.ylabel('x2')
+            plt.legend()
+            plt.title('Decision Boundary')
+            plt.show()
+        # elif X.shape[1] == 3 and np.unique(y).shape[0] == 2:
+        #     db = [(-w[0] - w[1] * i - w[2] * j) / w[3] for i, j in zip(X[0], X[1])]
+        #     ax = plt.axes(projection='3d')
+        #     ax.plot_trisurf(X.iloc[:, 0], X.iloc[:, 1], db, alpha=0.7)
+        #     ax.scatter3D(X[y == 0].iloc[:, 0], X[y == 0].iloc[:, 1], X[y == 0].iloc[:, 2], c='b', marker='x', label='Negative class')
+        #     ax.scatter3D(X[y == 1].iloc[:, 0], X[y == 1].iloc[:, 1], X[y == 1].iloc[:, 2], c='r', marker='x', label='Positive class')
+        #     ax.set_xlabel('X1')
+        #     ax.set_ylabel('X2')
+        #     ax.set_zlabel('X3')
+        #     plt.title('Decision Boundary')
+        #     plt.show()
+        elif X.shape[1] == 3 and np.unique(y).shape[0] > 2:
+            plt.figure(figsize=(16, 9))
+            ax = plt.axes(projection='3d')
+            db_done = []
+            for i in np.unique(y):
+                ax.scatter3D(X[y == i][0], X[y == i][1], X[y == i].iloc[:, 2], c=y[y == i].apply(lambda x: c_map[x]), marker='x', label=f'Class {i}')
+                for j in np.unique(y):
+                    if j != i and (i, j) not in db_done and (j, i) not in db_done:
+                        w_db = w[i] - w[j]
+                        db = []
+                        for m in range(X.shape[0]):
+                            db.append((-w_db[0] - w_db[1] * X.iloc[m, 0] - w_db[2] * X.iloc[m, 1]) / w_db[3])
+                        ax.plot_trisurf(X[0], X[1], db, alpha=0.5, label=f'Decision boundary between classes {i} & {j}')
+                        db_done.append((i, j))
+            ax.set_xlabel('X1')
+            ax.set_ylabel('X2')
+            ax.set_zlabel('X3')
+            plt.legend()
+            plt.title('Decision Boundaries')
+            plt.show()
+        else:
+            print('Facility to plot decision boundary for data with more than 3 features has not been added yet!')
+    elif gda_mode == 'qda':
+        pass
 
 def plot_roc(y, pred_prob, thresh):
     tpr = []
